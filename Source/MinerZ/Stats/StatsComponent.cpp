@@ -2,7 +2,7 @@
 
 #include "MinerZ/Core/ErrorDefine.h"
 
-FGuid UStatsComponent::AddDynamicStat(const UStatLine* StatLine)
+FGuid UStatsComponent::AddDynamicStat(UStatLine* StatLine)
 {
 	FGuid newId = FGuid::NewGuid();
 	m_dynamicStats[newId] = StatLine;
@@ -21,12 +21,15 @@ bool UStatsComponent::RemoveDynamicStat(FGuid StatId)
 
 UStatLine* UStatsComponent::GetStatLine(const FGameplayTag& StatType) const
 {
-	auto foundElement = m_dynamicStats.FindByPredicate([&StatType](const UStatLine& line)
+	for (TTuple<FGuid, UStatLine*> stat : m_dynamicStats)
 	{
-		return line.GetGameplayTag() == StatType;
-	});
+		if(stat.Value->GetGameplayTag() == StatType)
+		{
+			return stat.Value;
+		}
+	}
 
-	return foundElement;
+	return nullptr;
 }
 
 float UStatsComponent::GetStatLineValue(const FGameplayTag& StatType) const
@@ -34,7 +37,7 @@ float UStatsComponent::GetStatLineValue(const FGameplayTag& StatType) const
 	UStatLine* statLine = GetStatLine(StatType);
 	if(statLine == nullptr)
 	{
-		CORE_LOG(LogTemp, TEXT("No Valid stat line found for type %s. Will return -1."), StatType.ToString());
+		CORE_LOGM(LogTemp, "No Valid stat line found for type %s. Will return -1.", *StatType.ToString());
 		return -1;
 	}
 	return statLine->GetValue();
@@ -45,7 +48,7 @@ float UStatsComponent::ApplyStatLineToValue(float value, const FGameplayTag& Sta
 	UStatLine* statLine = GetStatLine(StatType);
 	if(statLine == nullptr)
 	{
-		CORE_LOG(LogTemp, TEXT("No Valid stat line found for type %s. Will return -1."), StatType.ToString());
+		CORE_LOGM(LogTemp, "No Valid stat line found for type %s. Will return -1.", *StatType.ToString());
 		return -1;
 	}
 
@@ -55,13 +58,13 @@ float UStatsComponent::ApplyStatLineToValue(float value, const FGameplayTag& Sta
 	switch (modifierType)
 	{
 		case EStatLineType::Flat:
-			returnValue = value + statLine->GetValue(); // simple flat value addition
+			returnValue = statLine->GetValue(); // simple flat value addition
 			break;
 		case EStatLineType::Percentage:
-			returnValue = value + value * statLine->GetValue(); // 10 damage + 10% of 10 = 11 total 
+			returnValue = value * statLine->GetValue(); // 10 damage + 10% of 10 = 11 total-> We return the diff so 1
 			break;
 		default:
-			CORE_LOG(LogTemp, TEXT("Invalid modifier type enter for this line %s"), StatType.ToString());
+			CORE_LOGM(LogTemp, "Invalid modifier type enter for this line %s", *StatType.ToString());
 	}
 
 	return returnValue;

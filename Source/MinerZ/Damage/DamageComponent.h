@@ -1,5 +1,8 @@
 ﻿#pragma once
+
 #include "DamagePayload.h"
+
+#include "DamageComponent.generated.h"
 
 UCLASS()
 class UDamageComponent : public UActorComponent
@@ -8,11 +11,11 @@ class UDamageComponent : public UActorComponent
 	
 public:
 	UFUNCTION(BlueprintCallable)
-	void TakeDamage(UDamagePayload& DamagePayload);
+	void TakeDamage(UDamagePayload* DamagePayload);
 
 private:
-	void ApplyBoostToDamage(UDamagePayload& DamagePayload) const;
-	void ApplyResistanceToDamage(UDamagePayload& DamagePayload) const;
+	void ApplyBoostToDamage(UDamagePayload* DamagePayload) const;
+	void ApplyResistanceToDamage(UDamagePayload* DamagePayload) const;
 
 	const FDamageDataTableEntry* GetDamageTableEntryForType(const FGameplayTag& DamageType) const;
 

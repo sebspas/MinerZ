@@ -2,15 +2,15 @@
 
 #include "MinerZ/Core/ErrorDefine.h"
 
-const FStatDataTableEntry* UStatLine::GetStatLineDetails() const
+FStatDataTableEntry UStatLine::GetStatLineDetails() const
 {
 	if(m_statDataTableEntry.IsNull())
 	{
 		CORE_LOG(LogTemp, TEXT("Invalid data table set for this stat line."));
-		return nullptr;
+		return FStatDataTableEntry{};
 	}
 
-	return m_statDataTableEntry.GetRow<FStatDataTableEntry>("UStatLine::GetStatLineDetails");
+	return *m_statDataTableEntry.GetRow<FStatDataTableEntry>("UStatLine::GetStatLineDetails");
 }
 
 void UStatLine::ModifyValue(float modifier)

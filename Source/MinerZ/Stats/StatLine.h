@@ -7,6 +7,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnStatChanged, float, OldValue, float, NewValue, float, Delta);
 
+UENUM()
 enum class EStatLineType : uint8
 {
 	Flat,
@@ -23,7 +24,7 @@ public:
 	const FGameplayTag& GetGameplayTag() const { return m_gameplayTag; }
 
 	UFUNCTION(BlueprintCallable)
-	const FStatDataTableEntry* GetStatLineDetails() const;
+	FStatDataTableEntry GetStatLineDetails() const;
 
 	UFUNCTION(BlueprintCallable)
 	void ModifyValue(float modifier);
@@ -35,16 +36,16 @@ public:
 	const EStatLineType& GetLineModifierType() const { return m_lineType; }
 	
 private:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Stat")
+	UPROPERTY(EditAnywhere, Category="Stat")
 	FGameplayTag m_gameplayTag {FGameplayTag::EmptyTag};
 	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Stat")
+	UPROPERTY(EditAnywhere, Category="Stat")
 	float m_base {1.f};
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Stat")
+	UPROPERTY(EditAnywhere, Category="Stat")
 	EStatLineType m_lineType {EStatLineType::Flat};
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Stat")
+	UPROPERTY(EditAnywhere, Category="Stat")
 	FDataTableRowHandle m_statDataTableEntry {};
 
 	UPROPERTY(BlueprintAssignable, Category="Stat")

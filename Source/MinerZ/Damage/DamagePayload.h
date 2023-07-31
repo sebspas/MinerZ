@@ -2,6 +2,8 @@
 
 #include "Damage.h"
 
+#include "DamagePayload.generated.h"
+
 UCLASS(BlueprintType)
 class UDamagePayload : public UObject
 {
@@ -10,12 +12,12 @@ class UDamagePayload : public UObject
 public:
 	AActor* GetSource() const { return m_source; }
 	
-	TArray<UDamage>& GetDamages() { return m_damages; }
+	TArray<UDamage*>& GetDamages() { return m_damages; }
 	
 private:
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY()
 	AActor* m_source;
 	
-	UPROPERTY(BlueprintReadWrite)
-	TArray<UDamage> m_damages;
+	UPROPERTY()
+	TArray<UDamage*> m_damages;
 };

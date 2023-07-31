@@ -11,7 +11,7 @@ class UStatsComponent : public UActorComponent
 
 public:
 	UFUNCTION(BlueprintCallable)
-	FGuid AddDynamicStat(const UStatLine* StatLine);
+	FGuid AddDynamicStat(UStatLine* StatLine);
 
 	UFUNCTION(BlueprintCallable)
 	bool RemoveDynamicStat(FGuid StatId);
@@ -30,11 +30,11 @@ private:
 	
 protected:
 	UPROPERTY()
-	TArray<UStatLine> m_baseStats;
+	TArray<UStatLine*> m_baseStats;
 
 	UPROPERTY()
-	TMap<FGuid, const UStatLine*> m_dynamicStats;
+	TMap<FGuid, UStatLine*> m_dynamicStats;
 
 	UPROPERTY()
-	TArray<UStatLine> m_computedActiveStats;
+	TArray<UStatLine*> m_computedActiveStats;
 };
