@@ -14,14 +14,35 @@ enum class EStatLineType : uint8
 	Percentage
 };
 
-UCLASS(Blueprintable)
+USTRUCT()
+struct FStatData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category="Stat")
+	FGameplayTag GameplayTag {FGameplayTag::EmptyTag};
+	
+	UPROPERTY(EditAnywhere, Category="Stat")
+	float Base {1.f};
+
+	UPROPERTY(EditAnywhere, Category="Stat")
+	EStatLineType LineType {EStatLineType::Flat};
+
+	UPROPERTY(EditAnywhere, Category="Stat")
+	FDataTableRowHandle StatDataTableEntry {};
+};
+
+UCLASS()
 class UStatLine : public UObject
 {
 	GENERATED_BODY()
 
 public:
+
+	void InitializeFromData(FStatData StatData);
+	
 	UFUNCTION(BlueprintCallable)
-	const FGameplayTag& GetGameplayTag() const { return m_gameplayTag; }
+	const FGameplayTag& GetGameplayTag() const { return m_statBaseData.GameplayTag; }
 
 	UFUNCTION(BlueprintCallable)
 	FStatDataTableEntry GetStatLineDetails() const;
@@ -30,24 +51,17 @@ public:
 	void ModifyValue(float modifier);
 
 	UFUNCTION(BlueprintCallable)
-	float GetValue() const { return m_base; }
+	float GetValue() const { return m_current; }
 
 	UFUNCTION(BlueprintCallable)
-	const EStatLineType& GetLineModifierType() const { return m_lineType; }
+	const EStatLineType& GetLineModifierType() const { return m_statBaseData.LineType; }
 	
 private:
-	UPROPERTY(EditAnywhere, Category="Stat")
-	FGameplayTag m_gameplayTag {FGameplayTag::EmptyTag};
+	UPROPERTY(EditAnywhere, DisplayName="Stats Base Values")
+	FStatData m_statBaseData;
 	
-	UPROPERTY(EditAnywhere, Category="Stat")
-	float m_base {1.f};
-
-	UPROPERTY(EditAnywhere, Category="Stat")
-	EStatLineType m_lineType {EStatLineType::Flat};
-
-	UPROPERTY(EditAnywhere, Category="Stat")
-	FDataTableRowHandle m_statDataTableEntry {};
-
 	UPROPERTY(BlueprintAssignable, Category="Stat")
 	FOnStatChanged OnStatValueChanged;
+	
+	float m_current {0.f};
 };

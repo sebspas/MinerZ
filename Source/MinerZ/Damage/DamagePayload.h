@@ -4,20 +4,14 @@
 
 #include "DamagePayload.generated.h"
 
-UCLASS(BlueprintType)
-class UDamagePayload : public UObject
+USTRUCT(BlueprintType)
+struct FDamagePayload
 {
 	GENERATED_BODY()
 	
-public:
-	AActor* GetSource() const { return m_source; }
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AActor* Source;
 	
-	TArray<UDamage*>& GetDamages() { return m_damages; }
-	
-private:
-	UPROPERTY()
-	AActor* m_source;
-	
-	UPROPERTY()
-	TArray<UDamage*> m_damages;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FDamage> Damages;
 };

@@ -4,12 +4,14 @@
 
 #include "StatsComponent.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType, meta=(BlueprintSpawnableComponent))
 class UStatsComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
+	virtual void BeginPlay() override;
+	
 	UFUNCTION(BlueprintCallable)
 	FGuid AddDynamicStat(UStatLine* StatLine);
 
@@ -17,7 +19,7 @@ public:
 	bool RemoveDynamicStat(FGuid StatId);
 
 	UFUNCTION(BlueprintCallable)
-	UStatLine* GetStatLine(const FGameplayTag& StatType) const;
+	UStatLine* GetStatLine(FGameplayTag StatType) const;
 
 	UFUNCTION(BlueprintCallable)
 	float GetStatLineValue(const FGameplayTag& StatType) const;
@@ -29,8 +31,11 @@ private:
 	void ReComputeStats();
 	
 protected:
+	UPROPERTY(EditAnywhere)
+	TArray<FStatData> m_baseStats;
+	
 	UPROPERTY()
-	TArray<UStatLine*> m_baseStats;
+	TArray<UStatLine*> m_baseStatsLines;
 
 	UPROPERTY()
 	TMap<FGuid, UStatLine*> m_dynamicStats;

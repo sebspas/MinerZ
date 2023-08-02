@@ -2,6 +2,20 @@
 
 #include "MinerZ/Core/ErrorDefine.h"
 
+void UStatsComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	for (const FStatData& stat : m_baseStats)
+	{
+		auto newStatLine = NewObject<UStatLine>();
+		newStatLine->InitializeFromData(stat);
+		m_baseStatsLines.Add(newStatLine);
+	}
+
+	ReComputeStats();
+}
+
 FGuid UStatsComponent::AddDynamicStat(UStatLine* StatLine)
 {
 	FGuid newId = FGuid::NewGuid();
@@ -19,13 +33,13 @@ bool UStatsComponent::RemoveDynamicStat(FGuid StatId)
 	return removedEntry != 1;
 }
 
-UStatLine* UStatsComponent::GetStatLine(const FGameplayTag& StatType) const
+UStatLine* UStatsComponent::GetStatLine(FGameplayTag StatType) const
 {
-	for (TTuple<FGuid, UStatLine*> stat : m_dynamicStats)
+	for (const auto stat : m_computedActiveStats)
 	{
-		if(stat.Value->GetGameplayTag() == StatType)
+		if(stat->GetGameplayTag() == StatType)
 		{
-			return stat.Value;
+			return stat;
 		}
 	}
 
@@ -72,5 +86,35 @@ float UStatsComponent::ApplyStatLineToValue(float value, const FGameplayTag& Sta
 
 void UStatsComponent::ReComputeStats()
 {
+	// Clear the currents one
+	m_computedActiveStats.Empty();
+
+	//  Add all the base stats first
+	auto addStatToExisting = [this](UStatLine* statLine)
+	{
+		for (UStatLine* stat : m_computedActiveStats)
+		{
+			if(stat->GetGameplayTag() == statLine->GetGameplayTag())
+			{
+				// Add the new line value on top of the existing one
+				stat->ModifyValue(statLine->GetValue());
+				return;
+			}
+		}
+
+		// Add the new line if we didn't find any existing stats with this tag
+		m_computedActiveStats.Add(statLine);
+	};
 	
+	for (UStatLine* statLine : m_baseStatsLines)
+	{
+		addStatToExisting(statLine);
+	}
+
+	// Add the dynamic next
+	for (TTuple<FGuid, UStatLine*> statEntry : m_dynamicStats)
+	{
+		UStatLine* statLine = statEntry.Value;
+		addStatToExisting(statLine);
+	}
 }

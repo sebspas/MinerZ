@@ -4,7 +4,7 @@
 #include "MinerZ/Stats/StatsComponent.h"
 #include "MinerZ/Stats/Data/StatsTypes.h"
 
-void UDamageComponent::TakeDamage(UDamagePayload* DamagePayload)
+void UDamageComponent::TakeDamage(FDamagePayload DamagePayload)
 {
 	// Resolve bonus (ex. physical boost, fire boost, ...)
 	ApplyBoostToDamage(DamagePayload);
@@ -21,41 +21,49 @@ void UDamageComponent::TakeDamage(UDamagePayload* DamagePayload)
 	ApplyResistanceToDamage(DamagePayload);
 
 	// Apply the damage to the health of the target
-	UStatLine* statLine = targetStatComponent->GetStatLine(STATS_Health);
-	for (const UDamage* damage : DamagePayload->GetDamages())
+	if(UStatLine* statLine = targetStatComponent->GetStatLine(STATS_Health))
 	{
-		statLine->ModifyValue(-damage->GetDamageValue());
+		for (const FDamage& damage : DamagePayload.Damages)
+		{
+			statLine->ModifyValue(-damage.BaseDamageValue);
+		}
 	}
+	else
+	{
+		CORE_LOGM(LogTemp, "Couldn't find stats for tag: %s", *STATS_Health.GetTag().ToString());
+	}
+	
+
 }
 
-void UDamageComponent::ApplyBoostToDamage(UDamagePayload* DamagePayload) const
+void UDamageComponent::ApplyBoostToDamage(FDamagePayload& DamagePayload) const
 {
 	// Grab the StatsComponent of the source
-	UStatsComponent* sourceStatComponent = DamagePayload->GetSource()->GetComponentByClass<UStatsComponent>();
+	UStatsComponent* sourceStatComponent = DamagePayload.Source->GetComponentByClass<UStatsComponent>();
 	if(!IsValid(sourceStatComponent))
 	{
 		CORE_LOG(LogTemp, TEXT("The source doesn't have a valid sourceStatComponent. Potential bonuses on damage won't be applied."));
 		return;
 	}
 
-	for (UDamage* damage : DamagePayload->GetDamages())
+	for (const FDamage& damage : DamagePayload.Damages)
 	{
-		const FDamageDataTableEntry* damageEntryForType = GetDamageTableEntryForType(damage->GetDamageType());
+		const FDamageDataTableEntry* damageEntryForType = GetDamageTableEntryForType(damage.DamageTypeTag);
 		if(damageEntryForType == nullptr)
 		{
-			CORE_LOGM(LogTemp, "No row was found for this damage type %s.", *damage->GetDamageType().ToString());
+			CORE_LOGM(LogTemp, "No row was found for this damage type %s.", *damage.DamageTypeTag.ToString());
 			break;
 		}
 
 		float newFinalValue = 0.f;
 		for (const FGameplayTag& statTag : damageEntryForType->BoostedByStats)
 		{
-			newFinalValue += sourceStatComponent->ApplyStatLineToValue(damage->GetDamageValue(), statTag);
+			newFinalValue += sourceStatComponent->ApplyStatLineToValue(damage.BaseDamageValue, statTag);
 		}
 	}
 }
 
-void UDamageComponent::ApplyResistanceToDamage(UDamagePayload* DamagePayload) const
+void UDamageComponent::ApplyResistanceToDamage(FDamagePayload& DamagePayload) const
 {
 	// TODO : needs to apply the res part
 }

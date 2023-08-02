@@ -1,21 +1,22 @@
 ﻿#pragma once
 
 #include "DamagePayload.h"
+#include "Data/DamageDataTableEntry.h"
 
 #include "DamageComponent.generated.h"
 
-UCLASS()
+UCLASS(ClassGroup=Damage, BlueprintType, meta=(BlueprintSpawnableComponent))
 class UDamageComponent : public UActorComponent
 {
 	GENERATED_BODY()
 	
 public:
 	UFUNCTION(BlueprintCallable)
-	void TakeDamage(UDamagePayload* DamagePayload);
+	void TakeDamage(FDamagePayload DamagePayload);
 
 private:
-	void ApplyBoostToDamage(UDamagePayload* DamagePayload) const;
-	void ApplyResistanceToDamage(UDamagePayload* DamagePayload) const;
+	void ApplyBoostToDamage(FDamagePayload& DamagePayload) const;
+	void ApplyResistanceToDamage(FDamagePayload& DamagePayload) const;
 
 	const FDamageDataTableEntry* GetDamageTableEntryForType(const FGameplayTag& DamageType) const;
 
